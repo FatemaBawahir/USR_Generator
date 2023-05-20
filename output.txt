@@ -1,0 +1,6 @@
+1	mEMne	mEMne	SYM	SYM	_	4	rsym	_	_
+2	usase	usase	SYM	SYM	_	4	rsym	_	_
+3	eka	eka	SYM	SYM	_	4	rsym	_	_
+4	praSna	praSna	SYM	SYM	_	0	rsym	_	_
+5	pUCA	pUCA	SYM	SYM	_	4	rsym	_	_
+

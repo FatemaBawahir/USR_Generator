@@ -1,0 +1,1 @@
+[[1, 'mEMne', '_mEMne_', 'SYM', 'SYM', '_', 4, 'rsym', '_', '_'], [2, 'usase', '_usase_', 'SYM', 'SYM', '_', 4, 'rsym', '_', '_'], [3, 'eka', '_eka_', 'SYM', 'SYM', '_', 4, 'rsym', '_', '_'], [4, 'praSna', '_praSna_', 'SYM', 'SYM', '_', 0, 'rsym', '_', '_'], [5, 'pUCA', '_pUCA_', 'SYM', 'SYM', '_', 4, 'rsym', '_', '_'], []]
