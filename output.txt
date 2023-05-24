@@ -1,6 +1,8 @@
-1	mEMne	mEMne	SYM	SYM	_	4	rsym	_	_
-2	usase	usase	SYM	SYM	_	4	rsym	_	_
-3	eka	eka	SYM	SYM	_	4	rsym	_	_
-4	praSna	praSna	SYM	SYM	_	0	rsym	_	_
-5	pUCA	pUCA	SYM	SYM	_	4	rsym	_	_
+1	इस्मा	इस्मा	NNP	NNP	_	5	k1	_	_
+2	रिया	रिया	NNP	NNP	_	5	k4	_	_
+3	से	से	PSP	PSP	_	2	lwg__psp	_	_
+4	प्रश्न	प्रश्न	NN	NN	_	5	k1	_	_
+5	पूछती	पूछती	VM	VM	_	0	main	_	_
+6	है	है	VAUX	VAUX	_	5	lwg__vaux	_	_
+7	|	|	SYM	SYM	_	5	rsym	_	_
 

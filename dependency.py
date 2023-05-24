@@ -1,9 +1,11 @@
 import os
 import sys
+import CONSTANTS
 from isc_parser import Parser
 parser = Parser(lang='hin')
 from wxconv import WXC
 
+verb_lst = ['bol', 'kah', 'pUC']
 def log(mssg, logtype='OK'):
     '''Generates log message in predefined format.'''
 
@@ -21,7 +23,13 @@ def process_relation(output):
         "k2inv": "rbks",
         "adv": "krvn",
         "rs": "re",
-        "jjmod": "intf"
+        "jjmod": "intf",
+        "jjmod__intf": "intf",
+        "nmod_k1inv": "rvks",
+        "nmod__adj+JJ": "mod",
+        "mod+JJ": "mod",
+        "nmod__adj +QC": "card",
+        "nmod__adj+DEM": "dem"
     }
 
     #to fetch necessary rule info in first iteration
@@ -29,6 +37,8 @@ def process_relation(output):
     verbs = []
     k2exists = False
     k2gexists = False
+    k4exists = False
+    k5exists = False
 
     for row in output:
         if len(row) > 0:
@@ -36,12 +46,18 @@ def process_relation(output):
                 k2exists = True
                 k2_head_verb_index = row[6]
                 k2_index = row[0]
-            if row[7] == 'k2g':
+            elif row[7] == 'k2g':
                 k2gexists = True
                 k2g_head_verb_index = row[6]
                 k2g_index = row[0]
-            if row[7] == 'main':
+            elif row[7] == 'main':
                 head_verb_index = row[0]
+            elif row[7] == 'k4':
+                k4exists = True
+                k4_index = row[0]
+            elif row[7] == 'k5':
+                k5exists = True
+                k5_index = row[0]
 
     #Swap k2 and k2g if both point to same head verb
     if k2exists and k2gexists:
@@ -50,6 +66,16 @@ def process_relation(output):
             output[k2_index-1][7] = up_dep
             up_dep = 'k2'
             output[k2g_index-1][7] = up_dep
+
+    #Change k4, k5 to k2g when the list of verbs- bol, kah, puC
+    main_verb = output[head_verb_index-1][1]
+    for verb in verb_lst:
+        if verb in main_verb:
+            up_dep = 'k2g'
+            if k4exists:
+                output[k4_index-1][7] = up_dep
+            if k5exists:
+                output[k5_index - 1][7] = up_dep
 
     #For direct dependency mapping
     for row in output:
@@ -66,8 +92,8 @@ def format_data(row):
         return []
     hindi_format = WXC(order="utf2wx", lang="hin")
     index = int(row[0])  if row[0] != '' else log('Value in the index col is missing')
-    token = row[1]
-    wx_token = hindi_format.convert(row[2]) if row[2] != '' else log('Value int the token col is missing')
+    wx_token = hindi_format.convert(row[1]) if row[1] != '' else log('Value int the token col is missing')
+    token = row[2]
     category = row[3]
     category_1 = row[4]
     col6 = row[5]
@@ -76,12 +102,27 @@ def format_data(row):
     col9 = row[8]
     col10 = row[9]
 
-    formatted_row = [index, token, wx_token, category, category_1, col6, related_to, relation, col9, col10]
+    formatted_row = [index, wx_token, token, category, category_1, col6, related_to, relation, col9, col10]
     return formatted_row
 
-def read_file(file_name):
+def read_input_file(file_name):
+    hindi_format = WXC(order="wx2utf", lang="hin")
+    try:
+        with open(file_name, 'r') as file:
+            lines = file.readlines()
+            file_rows = ''
+            for i in range(len(lines)):
+                lineContent = lines[i]
+                if lineContent.strip() == '':
+                    continue
+                else:
+                    file_rows = hindi_format.convert(lineContent)
 
-    open(file_name).readlines()
+            log('File data read.')
+    except FileNotFoundError:
+        log('No such File found.', 'ERROR')
+        sys.exit()
+    return file_rows
 
 def generate_parse_data(parser_output_line):
     """
@@ -101,28 +142,58 @@ def parse_file(parser_output):
     processed_relation = process_relation(format_output)
     return processed_relation
 
-
 def clean_input_file(input):
-    data = read_file(input)
-    data = data.strip()
-    hindi_format = WXC(order="wx2utf", lang="hin")
-    hindi_input = hindi_format.convert(data)
+    data = read_input_file(input)
 
-def get_parser_output():
-    input_file = "/Users/fatema/Desktop/workspace/LanguageCommunicator/AutomaticUSRGenerator/input.txt"
-    clean_input_file(input_file)
-    os.system("isc-parser -i input.txt -o output.txt")
+def get_parser_output(input, output):
+    input_file = CONSTANTS.INPUT_FILE
+    clean_input_file(input)
+    os.system("isc-parser -i input -o output")
+
+def add_wx_conv_col(data):
+    hindi_format = WXC(order="utf2wx", lang="hin")
+    i = len(data)
+    while i > 0:
+        i = i - 1
+        info = data[i].strip().split("\t")
+        wx_form = hindi_format.convert(info[1])
+        info[1] = wx_form
+        data[i] = '\t'.join(info)
+    return data
+
+def read_output_file(file_name):
+    try:
+        with open(file_name, 'r') as file:
+            lines = file.readlines()
+            file_rows = []
+            for i in range(len(lines)):
+                lineContent = lines[i]
+                if lineContent.strip() == '':
+                    continue
+                else:
+                    file_rows.append(lineContent)
+
+            log('Parser output file read.')
+    except FileNotFoundError:
+        log('No output file found.', 'ERROR')
+        sys.exit()
+    return file_rows
+
+
+def write_file(data, OUTPUT_FILE):
+    with open(OUTPUT_FILE, 'w') as file:
+        for row in data:
+            file.write(row)
+            file.write('\n')
+        log('Parser output file write successful')
 
 if __name__ == "__main__":
-    get_parser_output()
-    # hindi_format = WXC(order="wx2utf", lang="hin")
-    # generate_hindi_text = hindi_format.convert('mohana laMgadAkara calawA hE')
-    # print(generate_hindi_text)
-    # with open('out.txt', 'w') as file:
-    #     file.write(generate_hindi_text)
-    data = read_file("output.txt")
-    out = parse_file(data)
-    for row in out:
-        with open("parser_output.txt", 'w') as file:
-            file.write(str(out))
-            file.write("\n")
+    get_parser_output(CONSTANTS.INPUT_FILE, CONSTANTS.PARSER_OUTPUT_FILE)
+    data = read_output_file(CONSTANTS.PARSER_OUTPUT_FILE)
+    output = parse_file(data)
+
+    final_output = []
+    for inner_list in output:
+        inner_list = [str(ele) for ele in inner_list]
+        final_output.append('\t'.join(inner_list))
+    write_file(final_output, CONSTANTS.PROCESSED_PARSER_OUTPUT_FILE)
