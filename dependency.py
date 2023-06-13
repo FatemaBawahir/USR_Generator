@@ -54,6 +54,25 @@ def get_pointing_index(output, index):
             break
     return ptr_index
 
+
+def is_followed_by(output, index, term):
+    match_words = term.strip().split(' ')
+    count = len(match_words)
+    itr = 0
+    curr_index = index
+    for word in match_words:
+        next_word = get_term_by_index(output, curr_index+1)
+        pointing_index = get_pointing_index(output, curr_index+1)
+        next_word_dep = get_dependency_by_index(output, index+1)
+
+        if next_word == word and index == pointing_index and next_word_dep == 'lwg__psp':
+            curr_index = curr_index + 1
+            itr = itr + 1
+            if count == itr:
+                return True
+
+    return False
+
 def process_relation(output):
     dependency_mapper = {
         "r6-k1": "k1",
@@ -159,6 +178,7 @@ def process_relation(output):
         if len(row) > 0:
             dep_reln = row[7]
             index = row[0]
+            POS_tag = row[3]
             if dep_reln in dependency_mapper:
                 up_dep = dependency_mapper[dep_reln]
                 row[7] = up_dep
@@ -169,6 +189,25 @@ def process_relation(output):
                     row[7] = up_dep
                 else:
                     up_dep = 'rv'
+                    row[7] = up_dep
+            elif POS_tag == 'NNP' and dep_reln == 'k7p':
+                if is_followed_by(output, index, 'ke pAsa'):
+                    up_dep = 'rsm'
+                    row[7] = up_dep
+            elif POS_tag == 'NN' and dep_reln == 'k7':
+                if is_followed_by(output, index, 'ke pAsa'):
+                    up_dep = 'rsm'
+                    row[7] = up_dep
+            elif POS_tag == 'PRP' and dep_reln == 'k7':
+                if is_followed_by(output, index, 'pAsa'):
+                    up_dep = 'rsm'
+                    row[7] = up_dep
+            elif POS_tag == 'VM' and dep_reln == 'k7t':
+                if is_followed_by(output, index, 'se pahale'):
+                    up_dep = 'rblak'
+                    row[7] = up_dep
+                elif is_followed_by(output, index, 'ke bAxa'):
+                    up_dep = 'rblpk'
                     row[7] = up_dep
 
     #For vmod processing
