@@ -162,7 +162,7 @@ def process_relation(output):
             up_dep = 'k2'
             output[k2g_index-1][7] = up_dep
 
-    #Change k4, k5 to k2g when the list of verbs- bol, kah, puC
+    #Change k4, k5 to k2g when the list of verbs- bola, kaha, puCa
     if head_verb_exists:
         main_verb = output[head_verb_index-1][1]
         for verb in verb_lst:
@@ -178,6 +178,7 @@ def process_relation(output):
         if len(row) > 0:
             dep_reln = row[7]
             index = row[0]
+            term = row[1]
             POS_tag = row[3]
             if dep_reln in dependency_mapper:
                 up_dep = dependency_mapper[dep_reln]
@@ -201,13 +202,6 @@ def process_relation(output):
             elif POS_tag == 'PRP' and dep_reln == 'k7':
                 if is_followed_by(output, index, 'pAsa'):
                     up_dep = 'rsm'
-                    row[7] = up_dep
-            elif POS_tag == 'VM' and dep_reln == 'k7t':
-                if is_followed_by(output, index, 'se pahale'):
-                    up_dep = 'rblak'
-                    row[7] = up_dep
-                elif is_followed_by(output, index, 'ke bAxa'):
-                    up_dep = 'rblpk'
                     row[7] = up_dep
 
     #For vmod processing
@@ -239,9 +233,15 @@ def process_relation(output):
                     if term.endswith('ne'):
                         if next_term_tag == 'PSP' and next_term_pointing_index == index:
                             if next_term.endswith('para'):
-                                up_dep = 'rblpk'
+                                up_dep = 'rblsk'
                                 row[7] = up_dep
-                #elif dependency == 'k7t':
+                elif dependency == 'k7t':
+                    if is_followed_by(output, index, 'se pahale'):
+                        up_dep = 'rblak'
+                        row[7] = up_dep
+                    elif is_followed_by(output, index, 'ke bAxa'):
+                        up_dep = 'rblpk'
+                        row[7] = up_dep
 
     #For CC and ccof processing
     if CC_exists:
